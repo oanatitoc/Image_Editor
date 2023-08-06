@@ -1,0 +1,99 @@
+//Copyright Oana-Alexandra Titoc 313CAb 2022-2023
+
+Tema3 - Image_editor
+
+Pentru aceasta problema am realizat in main o succesiune de instructiuni
+conditionale ("meniu") care ne permite sa facem una din cele 10 actiuni
+posibile asupra unei imagini: LOAD, SELECT (care contine si SELECT ALL),
+HISTOGRAM, EQUALIZE, CROP, APPLY, SAVE , ROTATE, EXIT.
+
+Pentru editarea imaginilor, am folosit o matrice "matrix", alocata dinamic, in
+care am retinut pixelii acesteia si o structura "image" prin intermediul careia
+vom avea acces la dimensiunile imaginii (width, length), magic wordul care ne
+arata ce tip de imagine este incarcata (plain PGM - P2, PGM - P5, plain
+PPM - P3, PPM - P6), selectia curenta (coordonatele - x1, y1, x2, y2) si
+valoarea maxima a unui pixel.
+
+Pentru functia LOAD am deschis fisierul, am facut verificarile necesare daca
+acesta exista sau nu si am citit magic wordul, dimensiunile si valoarea maxima
+a pixelilor, avand grija de fiecare data sa ignor eventualele comentarii. Am
+alocat dinamic memorie pentru matrix astfel: daca imaginea era PGM, am alocat o
+matrice de height linii si width coloane, altfel am alocat height linii si 3 x
+width coloane. Nu in ultimul rand, am citit pixel cu pixel din fisier in
+functie de tipul fisierului (ascii sau binar) si tipul imaginii (grayscale sau
+color). Am inchis fisierul si am actualizat x1, y1, x2, y2 in colturile din
+stanga sus, respectiv dreapta jos (SELECT ALL).
+
+Pentru functia SELECT am citit un string si am verificat daca acesta este
+"ALL". In acest caz am facut SELECT ALL. Altfel, am verificat daca stringul
+citit este numar, daca da, l-am transformat in int si l-am actualizat ca
+fiind x1. Apoi am citit pe rand alte 3 siruri de caractere facand acelasi
+procedeu de verificare (y1, x2, y2).
+ 
+Functia HISTOGRAM se aplica doar pentru imaginile grayscale. Am parcurs toata
+matricea si am facut vectorul de frecventa al aparitiei pixelilor. Am parcurs
+toti pixelii de la 0 la 255 facand suma frecventei pixelilor dintr-un bin si am
+aflat suma maxima a frecventelor dintre binuri (fr_max). Am parcurs din nou
+pixelii de la 0 la 255 si dupa fiecare 256 / y pixeli, unde y e numarul de
+binuri, am calculat numarul de stelute corespunzatoare acelui bin conform
+formulei date in cerinta. 
+
+Pentru functia EQUALIZE am facut din nou un vector de frecventa a pixelilor
+si am parcurs numerele de la 0 la 255, iar daca acea valoare exista in matrice
+i-am calculat noua valoare conform formulei, salvand valorile modificate
+intr-un vector. La final am parcurs matricea si am egalat fiecare pixel cu noua
+sa valoare egalizata.
+
+Functia CROP face modificari doar pe imaginile care au fost selectate inainte
+(pentru SELECT ALL imaginea nu sufera modificari). Asfel, am actualizat noua
+lungime si latime cu cu y2 - y1, respectiv x2 - x1 si am alocat o matrice
+auxiliara cu aceste noi dimensiuni. Am parcurs portiunea selectata din matricea
+initiala si am egalat matricea auxiliara cu valorile respective. Am eliberat
+memoria vechii matrice, am realocat-o cu noile dimensiuni si am egalat-o cu
+auxiliara. Am facut aceste operatii tinand cont de tipul imaginii (grayscale /
+color).
+
+Functia APPLY functioneaza doar pe sectiunea selectata dintr-o imagine color.
+Astfel, am alocat o matrice auxiliara de dimensiunile vechii matrice si am
+egalat-o cu aceasta. Am parcurs sectiunea care trebuie schimbata, verificand ca
+pixelii care urmeaza a fi modificati sa nu fie marginali si i-am modificat pe
+cei din selectie in functie de parametrul primit (EDGE, SHARPEN, BLUR,
+GAUSSIAN_BLUR). Am construit fiecare nucleu de 3 x 3 in functie de parametru si
+am parcurs matricea de 3 x 3 din jurul pixelului care trebuia modificat.
+Matricea parcursa sarea pe coloane din 3 in 3 datorita celor 3 valori (rosu,
+verde, albastru) care formeaza un pixel vizibil.
+
+Pentru functia SAVE se deschide un fisier de output si se printeaza toti
+pixelii din imaginea curenta in functie de tipul imaginii si modul in care se
+doreste ca aceasta sa fie salvata (ascii sau binar).
+
+Functia ROTATE se aplica pe orice tip de imagine si o poate roti fie intreaga,
+fie doar o parte selectata din ea, cu conditia ca acea selectie sa fie patrata.
+Pentru rotirea cu 0, 360 sau -360 de grade, imaginea ramane neschimbata. Pentru
+rotirea cu 180 sau -180 de grade se apeleaza de doua ori rotirea cu 90 de
+grade, iar pentru rotirea cu 270 sau -90 de grade se apeleaza de 3 ori rotirea
+cu 90. Am facut 2 functii care rotesc intreaga imagine "rotate_90_grayscale" si
+"rotate_90_color" si 2 functii care rotesc doar selectiile
+"rotate_90_grayscale_selected" si "rotate_90_color_selected". Pentru -270 de
+grade imaginea se modifica la fel ca pentru 90 de grade, functia fiind apelata
+o singura data. In toate aceste functii am alocat memorie pentru o matrice
+auxiliara pe care am egalat-o cu matricea initiala.
+
+Pentru rotirea intregii imagini am dealocat memoria matricei initiale si am
+realocat-o cu width linii si height coloane (pentru grayscale) si 3 x height
+coloane (pentru color). Pentru ambele functii am parcurs matricea matrix
+realocata de sus in jos si de la dreapta la stanga (prin doua foruri) si
+matricea auxiliara de sus in jos si de la stanga la dreapta (prin actualizarea
+unor indici initializati cu 0) pentru a-i atribui lui matrix noile valori.
+Pentru matricea color am parcurs coloanele din 3 in 3 actualizand toate cele 3
+valori.
+
+Pentru rotirea selectiei lucrurile stau mai simplu deoarece nu mai trebuie
+realocata memoria pentru intreaga matrice, ci doar actualizati pixelii care se
+modifica. Se parcurge partea selectata la fel, de sus in jos si de la dreapta
+la stanga si matricea auxiliara de sus in jos si de la stanga la dreapta
+(de aceasta data pornind de la indecsii a.x1, a.y1 si nu de la 0, 0 ca si in
+cazul anterior).
+
+In cazul comenzii EXIT se elibereaza toate resursele si programul se inchide.
+
